@@ -1,43 +1,45 @@
-#user index
-user_db = {
-    'sandcastle':{'name':'ALAN M JOSE',
-                  'age':50,
-                  "role":'AUTHOR'
-                  },
-    'spiderman':{'name':'PETER PARKER',
-                  'age':45,
-                  "role":'RESEARCH SCIENTIST'
-                  },
-    'sophi54':{'name':'SOPHIA TESLA',
-                  'age':39,
-                  "role":'AI ARCHITECT'
-                  },
-    'tr4acy':{'name':'TRACY SERAPH',
-                  'age':40,
-                  "role":'DOCTER'
-                  },
-    'ANUCREM34@':{'name':'KINGLIA',
-                  'age':31,
-                  "role":'TEACHER'
-                  }
-}
-#SOCIAL GRAPH 
-social_graph = {
-    'sandcastle':{ 'followers':{'spiderman',"sophi54","tr4acy"},
-                  'following':{'sophi54','tr4acy','spiderman'}
-                  },
-    'spiderman':{
-                 'followers':{'sandcastle',"sophi54","tr4acy"},
-                'following':{'sophi54','assmika','sandcastle','tr4acy'}
-                  },
-    'sophi54':{'followers':{'sandcastle','spiderman','tr4acy'},
-                'following':{'sandcastle','spiderman','asmika34@'}
-                  },
-    'tr4acy':{'followers':{'sandcastle','spiderman',},
-                'following':{'sandcastle','spiderman','sophi54'}
-                  },
-    'asmika34@':{'followers':{'sophi54','spierman'},
-                'following':{}
-                  }
-}
-print(user_db['sandcastle']['name'])
+#step 1 :database initialization 
+user_db = {}  #fast lookup of username to get name,age,password
+
+social_graph = {} #set for follower and following count
+
+post_db = [] #allows chronological order hence new post to append 
+
+#functions
+def signup(username,name,password,confirmpassword,DOB):
+    if username in user_db:
+        print("THIS USERNAME IS TAKEN")
+        return False
+    if password != confirmpassword:
+        print("password didnt matched")
+
+    user_db[username]={"name" : name.upper(),
+                        "password": password,
+                       "confirm_password":confirmpassword,
+                       "DOB":DOB
+                     }
+    
+    social_graph[username] = {
+        "followers":set(),  # o(1) lookup and no duplicates like lists
+        "following" : set() #new set created set()meaning 
+    }
+    print("sign up successful \n account created for",username)
+    return True
+
+
+def login(username,writtenpassword):
+    
+    if username not in user_db:
+        print("NO ACCOUNT FOUND CREATE ONE")
+        return False
+    
+    stored_password = user_db[username][password]
+    
+    if writtenpassword != stored_password:
+        print("password didnt match")
+        return False
+    print("login successful welcome @",username)
+    return True
+
+        
+        
