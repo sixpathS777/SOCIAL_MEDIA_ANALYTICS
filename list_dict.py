@@ -62,10 +62,10 @@ def view_feed(username):
     #shows latest content of following to the user 
     my_following = social_graph[username]['following']
     feed_count = 0
-    for posts in reversed(post_db):
+    for post in reversed(post_db):
         if post['author'] in my_following or post['author'] == username:
-            print(f"\n {post['author']},{post[timestamp]}")
-            print(f"{post[content]}")
+            print(f"\n {post['author']},{post['timestamp']}")
+            print(f"{post['content']}")
             print(f"❤️ {post['likes']} likes")
             print('*'*25)
             feed_count+=1
@@ -167,6 +167,57 @@ def main_menu():
         else:
             print("❌ Enter a valid number (1-3).")
 
-main_menu()
+#main_menu()
 
-        
+#checking signup
+signup("mage", "John", "1234", "1234", "01-01-2000")
+#print(user_db)
+#print(social_graph)
+
+#chcking login
+print(login("mage", "1234"))    # True
+print(login("mage", "wrong"))   # False
+print(login("unknown", "123"))  # False
+
+#checking post
+create_post("mage", "Hello world!")
+create_post("mage", "My second post")
+
+print(post_db)
+
+view_feed('mage')
+
+def add_users():                                   #10 users with different names, passwords, DOBs, and one post each.
+
+    signup("alex01", "Alex", "alex123", "alex123", "12-03-1998")
+    create_post("alex01", "Just finished learning Python dictionaries!")
+
+    signup("emma02", "Emma", "emma456", "emma456", "25-07-1999")
+    create_post("emma02", "Good morning everyone ☀️")
+
+    signup("liam03", "Liam", "liam789", "liam789", "08-11-2000")
+    create_post("liam03", "Workout completed 💪")
+
+    signup("olivia04", "Olivia", "olivia321", "olivia321", "15-01-1997")
+    create_post("olivia04", "Reading a new book on AI.")
+
+    signup("noah05", "Noah", "noah654", "noah654", "30-09-2001")
+    create_post("noah05", "Anyone watching the match tonight?")
+
+    signup("ava06", "Ava", "ava987", "ava987", "22-05-1998")
+    create_post("ava06", "Coffee + Coding = Perfect day ☕")
+
+    signup("ethan07", "Ethan", "ethan111", "ethan111", "18-12-1996")
+    create_post("ethan07", "Started learning Data Structures today.")
+
+    signup("mia08", "Mia", "mia222", "mia222", "05-04-2002")
+    create_post("mia08", "Beautiful weather outside!")
+
+    signup("james09", "James", "james333", "james333", "14-08-1995")
+    create_post("james09", "Debugging code for 2 hours 😭")
+
+    signup("sophia10", "Sophia", "sophia444", "sophia444", "27-10-2000")
+    create_post("sophia10", "Consistency beats motivation.")
+
+    print("\n10 users and their posts have been added.")
+add_users()
