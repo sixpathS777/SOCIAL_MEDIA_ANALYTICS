@@ -52,11 +52,76 @@ def create_post(username,content):
         'author' : username,
         'content': content,
         'timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "likes": 0
+        "likes": set(), # to avoid duplicate likes
+        'comments':[]
     }
     post_db.append(post_dict)
     print("succesfully [posted]")
     return True
+def add_comments(postid,username,content):
+    for posts in post_db:
+        if postid == posts['postid']:
+            comment_dict ={
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "username" : username,
+                "content" : content
+            }
+            posts['comments'].append(comment_dict)
+            print("comment added")
+            return
+    print("no such posts")
+
+def delete_comment(postid,username,content):
+    for posts in post_db:
+        if postid == posts['postid']:
+            for comments in posts['comments']:
+                if (comments['username'] == username and comments['content'] == content):
+                    posts['comments'].remove(comments)
+                    print("comment deleted successfully")
+                    return 
+            print("no such comments")
+            return
+    print("no such posts")
+
+def view_comments(postid):
+    for posts in post_db:
+        if postid == posts['postid']:
+            for comments in posts['comments']:
+                print(comments)
+            return
+        print("no comments")
+        return
+    print("no post like that gang")
+
+def user_profile(username):
+
+    if username not in user_db:
+        print("No such user")
+        return
+
+    print("@" * 15)
+    print(f"Username : {username}")
+    print(f"DOB : {user_db[username]['DOB']}")
+    print(f"FOLLOWING : {len(social_graph[username]['following'])}")
+    print(f"FOLLOWERS : {len(social_graph[username]['followers'])}")
+
+    total_post = 0
+
+    for posts in post_db:
+        if username == posts['author']:
+            total_post += 1
+
+    print(f"TOTAL POSTS : {total_post}")
+    
+def search(search_letter):
+    found = False
+    for username in user_db:
+        if username.startswith(search_letter) :  # if search_letter in username
+            print(username)
+            found = True
+    if found == False:
+        print(f"no such user {search_letter}")
+    
 
 def view_feed(username):
     #shows latest content of following to the user 
@@ -73,6 +138,67 @@ def view_feed(username):
     if feed_count == 0 :
         print("Your feed is empty\npost or follow others to view their feed ")
 
+def follow(current_user,follow_name):
+    if follow_name not in user_db:
+        print("no such user exists")
+        return 
+    if follow_name == current_user:
+        print("you cannot follow yourself")
+        return
+    if follow_name  in social_graph[current_user]['following']:
+        print(f"already following {follow_name}")
+        return
+    
+    social_graph[current_user]['following'].add(follow_name)
+
+    social_graph[follow_name]['followers'].add(current_user)
+
+    print(f"{current_user} now follows @{follow_name}")
+
+def unfollow(current_user,unfollow_name):
+    if unfollow_name not in user_db:
+        print("no such user exists")
+        return 
+    if unfollow_name == current_user:
+        print("you cannot unfollow yourself")
+        return
+    if unfollow_name  not in social_graph[current_user]['following']:
+        print(f"you didnt even followed @ {unfollow_name}")
+        return
+    
+    social_graph[current_user]['following'].remove(unfollow_name)
+    social_graph[unfollow_name]['followers'].remove(current_user)
+    print(f"{current_user} now unfollows @{unfollow_name}")
+
+#---#-------#------------#--------------#-------------------------#---------------
+def likes_post(current_user,posts_id):
+    for posts in post_db:
+        if posts_id == posts["postid"]:
+            if current_user not in posts['likes']:
+                posts['likes'].add(current_user)
+                print(f"you liked the posts {posts['postid']}")
+                print(f"current likes {len(posts['likes'])}")
+                return 
+            else:
+                print("already liked it")
+                return
+    
+    print("no such posts")
+
+def unlike_post(current_user,posts_id):
+    for posts in post_db:
+        if posts_id == posts["postid"]:
+            if current_user in posts['likes']:
+                posts['likes'].remove(current_user)
+                print(f"removing like from {posts['postid']}")
+                print(f"current likes {len(posts['likes'])}")
+                return 
+            else:
+                print("you never liked it ")
+                return
+    
+    print("no such posts")
+#------------#------------------#-----------------------------#------------------------------
 
 
 
@@ -220,4 +346,21 @@ def add_users():                                   #10 users with different name
     create_post("sophia10", "Consistency beats motivation.")
 
     print("\n10 users and their posts have been added.")
+
 add_users()
+'''
+follow('mia08','james09')
+print(social_graph['mia08']['following'])
+print(social_graph['james09']['followers'])
+unfollow('mia08','james09')
+print(social_graph["mia08"]['following'])
+print(post_db)
+likes_post("james09",7)
+likes_post('ethan07',7)
+likes_post('ethan07',7)
+unlike_post('ethan07',7)'''
+add_comments(1,'james09','sikee')
+add_comments(1,'mia08','superb')
+view_comments(1)
+user_profile('noah05')
+search('a')
