@@ -6,7 +6,12 @@ social_graph = {} #set for follower and following count
 
 post_db = [] #allows chronological order hence new post to append 
 
+message_db = []
+
+notification_db = {}
+
 #functions
+
 def signup(username,name,password,confirmpassword,DOB):
     if username in user_db:
         print("THIS USERNAME IS TAKEN")
@@ -19,11 +24,11 @@ def signup(username,name,password,confirmpassword,DOB):
                        "confirm_password":confirmpassword,
                        "DOB":DOB
                      }
-    
     social_graph[username] = {
         "followers":set(),  # o(1) lookup and no duplicates like lists
         "following" : set() #new set created set()meaning 
     }
+    notification_db[username] = []
     print("sign up successful \n account created for",username)
     return True
 
@@ -43,10 +48,7 @@ def login(username,writtenpassword):
     return True
 
 def create_post(username,content):
-    
-   
     post_id = len(post_db)+1
-    
     post_dict = {
         "postid" : post_id,
         'author' : username,
@@ -57,7 +59,102 @@ def create_post(username,content):
     }
     post_db.append(post_dict)
     print("succesfully [posted]")
-    return True
+    return
+
+def send(username1,username2):
+    if username1 not in user_db or username2 not in user_db:
+        return "messaging not possible"
+    content = input("enter content ")
+    if content.strip() == "":
+        print("cannot send empty messages")
+        return
+    mess_dict ={
+      'content':content,
+      'timestamp' : datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+      'sender' : username1,
+      'receiver' : username2
+    }
+    message_db.append(mess_dict)
+    print("msg_send")
+
+    notification_db[username2].append(f" messages from {username1}")
+    return
+def view_notification(username):
+    if username in user_db:
+        if len(notification_db[username])>0:
+            print(notification_db[username])
+            return
+        else:
+            print("no notifications")
+            return
+    else:
+        print("no such user")
+        return
+
+def clear_notifications(username):
+
+    if username not in user_db:
+        print("No such user")
+        return
+
+    if len(notification_db[username]) == 0:
+        print("No notifications to clear")
+        return
+
+    notification_db[username] = []
+
+    print("All notifications cleared successfully")
+
+    
+
+
+
+
+def view_chat(user1, user2):
+    found = False
+
+    for msgs in message_db:
+        if ((msgs['sender'] == user1 and msgs['receiver'] == user2) or
+            (msgs['sender'] == user2 and msgs['receiver'] == user1)):
+
+            print(f"[{msgs['timestamp']}] @{msgs['sender']}: {msgs['content']}")
+            found = True
+
+    if not found:
+        print("No chat history found")
+
+
+
+def delete_post(username,postid):
+  for posts in post_db:
+     if posts['postid'] == postid:
+      if username != posts['author']:
+        print("you can only delete your own post")
+        return
+      content = posts['content']
+      post_db.remove(posts)
+      print(f"{content} deleted")
+      return 
+  print("no such posts")
+  return
+
+def viewuser_posts(username):
+    found = False
+
+    for posts in post_db:
+        if username == posts['author']:
+            print("-" * 30)
+            print(f"Post ID : {posts['postid']}")
+            print(f"Content : {posts['content']}")
+            print(f"Posted on : {posts['timestamp']}")
+            print(f"Likes : {len(posts['likes'])}")
+            print("-" * 30)
+
+            found = True
+
+    if not found:
+        print(f"@{username} has not posted anything yet.")
+
 def add_comments(postid,username,content):
     for posts in post_db:
         if postid == posts['postid']:
@@ -68,6 +165,9 @@ def add_comments(postid,username,content):
             }
             posts['comments'].append(comment_dict)
             print("comment added")
+            username1 = posts['author']
+            if username1!=username:
+                notification_db[username1].append(f"{username} added a comment on {postid} do check it out")
             return
     print("no such posts")
 
@@ -112,6 +212,20 @@ def user_profile(username):
             total_post += 1
 
     print(f"TOTAL POSTS : {total_post}")
+
+def edit_post(username,postid):
+  for posts in post_db:
+    if posts['postid']==postid:
+      if username != posts['author']:
+        print("you cannot edit")
+        return
+      old_content = posts['content']
+      new_content = input("what to edit ")
+      posts['content']=new_content
+      print(f"{old_content} success changed to [[[[{new_content}]]]]")
+      return 
+  print("no such posts")
+  return
     
 def search(search_letter):
     found = False
@@ -148,12 +262,10 @@ def follow(current_user,follow_name):
     if follow_name  in social_graph[current_user]['following']:
         print(f"already following {follow_name}")
         return
-    
     social_graph[current_user]['following'].add(follow_name)
-
     social_graph[follow_name]['followers'].add(current_user)
-
     print(f"{current_user} now follows @{follow_name}")
+    notification_db[follow_name].append(f"{follow_name} started following you ")
 
 def unfollow(current_user,unfollow_name):
     if unfollow_name not in user_db:
@@ -178,6 +290,8 @@ def likes_post(current_user,posts_id):
                 posts['likes'].add(current_user)
                 print(f"you liked the posts {posts['postid']}")
                 print(f"current likes {len(posts['likes'])}")
+                username = posts['author']
+                notification_db[username].append(f"{current_user} liked your post {posts_id}")
                 return 
             else:
                 print("already liked it")
@@ -199,7 +313,6 @@ def unlike_post(current_user,posts_id):
     
     print("no such posts")
 #------------#------------------#-----------------------------#------------------------------
-
 
 
 def dashboard(username):
@@ -362,5 +475,16 @@ unlike_post('ethan07',7)'''
 add_comments(1,'james09','sikee')
 add_comments(1,'mia08','superb')
 view_comments(1)
+'''
 user_profile('noah05')
 search('a')
+delete_post('ava06',9)
+print(post_db[7])
+viewuser_posts('mia08')
+likes_post('ethan07',10)
+viewuser_posts('mia08')
+
+edit_post('mia08',10)
+send("ava06",'mia08')
+send('mia08','ava06')
+view_chat("mia08","ava06")'''
